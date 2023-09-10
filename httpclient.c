@@ -30,9 +30,9 @@ err_t body(void *arg, struct altcp_pcb *conn,
 {
     printf("body\n");
     pbuf_copy_partial(p, myBuff, p->tot_len, 0);
-    int s = strlen(myBuff);
-    printf("body length %d\n", s);
-    printf("%s", myBuff);
+    //int s = strlen(myBuff);
+    printf("body length %d\n", p->tot_len);
+    //printf("%s", myBuff);
     return ERR_OK;
 }
 
@@ -51,12 +51,25 @@ int setup(uint32_t country, const char *ssid,
     {
         netif_set_hostname(netif_default, hostname);
     }
-
-    // if (cyw43_arch_wifi_connect_async(ssid, pass, auth))
-    if (cyw43_arch_wifi_connect_timeout_ms(ssid, pass, auth, 10000))
-    {
-        return 2;
-    }
+  int err;
+  char buffer[255];
+  int retrycount = 0;
+	while (retrycount < 10)
+	{
+		// if (cyw43_arch_wifi_connect_async(ssid, pass, auth))
+		if (err = cyw43_arch_wifi_connect_timeout_ms(ssid, pass, auth, 30000))	{	
+			sprintf(buffer, "Error connecting to WiFi: %d", err);
+			printf("%s\n", buffer);
+			retrycount++;
+			sleep_ms(1000);
+			printf("Retrying connection %d/10", retrycount);
+		} else {
+			break;
+		}
+	} 
+	if ( err != 0) {
+		return 2;
+	}
 
     int flashrate = 1000;
     int status = CYW43_LINK_UP + 1;
@@ -129,7 +142,8 @@ int main()
     printf("PASS: %s\n", pass);
 
     printf("Country: %s\n", WIFI_COUNTRY);
-    printf("Remote domain: %s\n", REMOTE_DOMAIN);
+    printf("Remote url: %s\n", SERVER_URL);
+    printf("Remote port: %s\n", SERVER_PORT);
     printf("Relative url: %s\n", RELATIVE_URL);
     if (strlen(WIFI_COUNTRY) == 2)
     {
@@ -150,14 +164,15 @@ int main()
     {
         uint16_t port = 80;
         httpc_connection_t settings;
-
+        
         settings.result_fn = result;
         settings.headers_done_fn = headers;
-
+        int serverport = atoi(SERVER_PORT);
+        serverport = 80;	
         err_t err = httpc_get_file_dns(
-            REMOTE_DOMAIN,
-            80,
-            RELATIVE_URL,
+            SERVER_URL,
+            serverport,
+            "/20.txt",
             &settings,
             body,
             NULL,
@@ -165,8 +180,14 @@ int main()
 
         printf("status %d \n", err);
     }
-    while (true)
-    {
-        sleep_ms(500);
-    }
+    while (true) {
+       
+         cyw43_arch_poll();
+        // you can poll as often as you like, however if you have nothing else to do you can
+        // choose to sleep until either a specified time, or cyw43_arch_poll() has work to do:
+        //cyw43_arch_wait_for_work_until(make_timeout_time_ms(1000));
+        
+        /* Handle all system timeouts for all core protocols */
+        
+       }
 }

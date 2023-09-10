@@ -18,6 +18,8 @@ add_compile_definitions(WIFI_SSID="${WIFI_SSID}")
 add_compile_definitions(WIFI_PASSWORD="${WIFI_PASSWORD}")
 add_compile_definitions(WIFI_COUNTRY="${WIFI_COUNTRY}")
 add_compile_definitions(REMOTE_DOMAIN="${REMOTE_DOMAIN}")
+add_compile_definitions(SERVER_URL="${SERVER_URL}")
+add_compile_definitions(SERVER_PORT="${SERVER_PORT}")
 add_compile_definitions(RELATIVE_URL="${RELATIVE_URL}")
 # make project() variabele
 set(PROJECT_NAME httpclient)
