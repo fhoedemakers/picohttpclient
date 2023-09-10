@@ -168,11 +168,10 @@ int main()
         settings.result_fn = result;
         settings.headers_done_fn = headers;
         int serverport = atoi(SERVER_PORT);
-        serverport = 80;	
         err_t err = httpc_get_file_dns(
             SERVER_URL,
             serverport,
-            "/20.txt",
+            RELATIVE_URL,
             &settings,
             body,
             NULL,
